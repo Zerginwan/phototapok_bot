@@ -293,7 +293,7 @@ def main():
                 tasks.append(task[0])
             conn.close()
             additional = str(random.choice(tasks))
-            cursor.executescript("UPDATE teams SET additional = additional || ',' || ? WHERE event_id IN ? AND users LIKE '%?%'", [event_ids, str(message.from_user.id)])
+            cursor.executescript("UPDATE teams SET additional = additional || ',' || ? WHERE event_id IN ? AND users LIKE '%?%'", [additional, event_ids, str(message.from_user.id)])
             for user_id in cursor.executescript("SELECT users FROM teams WHERE rowid = ?;",[cursor.lastrowid])[0].split(","):
                 bot.send_message(int(user_id), "Ваше новое дополнительное задание: " + str(random.choice(tasks)).replace("_",r"\_"))
         except:
@@ -341,6 +341,9 @@ def main():
                 new_file.write(downloaded_file)
             conn.close()
             bot.reply_to(message, "Фото добавлено")
+            bashCommand = "rclone move "+ dirname +"/photos " + remote_point_name + ":photos_"+event_id+"/"
+            process = subprocess.Popen(bashCommand.split(), stdout=subprocess.PIPE)
+            output, error = process.communicate()
 
         except:
             try:
@@ -521,7 +524,7 @@ def main():
                     bot.reply_to(message,'Задание добавлено. rowid: ' + str(cursor.lastrowid))
                         
                 else:
-                    bot.reply_to(message,"Пришлите верный JSON после /add_task. event_id: 0 для задачи из общего списка (для всех событий). {'name': 'low case name','description':'', 'event_id': %i, 'main': 1, 'additional': 0, 'enable': 1}".replace("_",r"\_") % event[0])
+                    bot.reply_to(message,"Пришлите верный JSON после /add_task. event_id: 0 для задачи из общего списка (для всех событий). {'name': 'low case name','description':'', 'event_id': %i, 'main': 1, 'additional': 0}".replace("_",r"\_") % event[0])
             conn.close()
         except:
             try:
