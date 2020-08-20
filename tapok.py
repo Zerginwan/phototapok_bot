@@ -398,7 +398,7 @@ def start_bot():
             conn = create_connection()
             cursor = conn.cursor()
             event_id = cursor.execute("SELECT event_id FROM events ORDER BY event_id DESC LIMIT 1;").fetchone()[0]
-            team = cursor.execute("SELECT event_id FROM teams WHERE event_id = ? AND user_id = ?;",[event_id, message.from_user.id]).fetchall()
+            team = cursor.execute("SELECT * FROM teams WHERE event_id = ? AND users LIKE ? ORDER BY id DESC LIMIT 1;",[event_id, "%"+str(message.from_user.id)+"%"]).fetchone()
             output_photo = dirname + '/photos'
             if not os.path.exists(output_photo):
                 os.makedirs(output_photo)
@@ -407,7 +407,7 @@ def start_bot():
                 new_db_photo_text = team[5] + "," + str(output_photo)
             else:
                 new_db_photo_text = str(output_photo)
-            cursor.execute("UPDATE teams SET photo = ?, photo_count = ? WHERE event_id = ?;",[new_db_photo_text, sum(team[6], 1), team[0]])
+            cursor.execute("UPDATE teams SET photos = ?, photos_count = ? WHERE event_id = ?;",[new_db_photo_text, (int(team[6]) + 1), team[0]])
             file_info = bot.get_file(message.photo[-1].file_id)
             downloaded_file = bot.download_file(file_info.file_path)
             with open(output_photo, 'wb') as new_file:
@@ -415,7 +415,7 @@ def start_bot():
             conn.commit()
             conn.close()
             bot.reply_to(message, "Фото добавлено")
-            bashCommand = "rclone move "+ dirname +"/photos " + remote_point_name + ":photos_"+event_id+"/"
+            bashCommand = "rclone move "+ dirname +"/photos " + remote_point_name + ":photos_"+str(event_id)+"/"
             process = subprocess.Popen(bashCommand.split(), stdout=subprocess.PIPE)
             output, error = process.communicate()
 
@@ -812,11 +812,11 @@ def start_bot():
 
 if __name__ == '__main__':
     # redirect standard file descriptors
-    sys.stdout.flush()
-    sys.stderr.flush()
-    so = open(stdout, 'a+')
-    se = open(stderr, 'a+')
-    os.dup2(so.fileno(), sys.stdout.fileno())
-    os.dup2(se.fileno(), sys.stderr.fileno())
+    #sys.stdout.flush()
+    #sys.stderr.flush()
+    #so = open(stdout, 'a+')
+    #se = open(stderr, 'a+')
+    #os.dup2(so.fileno(), sys.stdout.fileno())
+    #os.dup2(se.fileno(), sys.stderr.fileno())
     
     start_bot()
