@@ -19,7 +19,6 @@ python3 tapok.py
 ```  
 ### Демонизация:  
 ```  
-cp ./tapok.service /etc/systemd/system
 cat > /etc/systemd/system/tapok.service << EOF
 [Unit]
 Description=Telegram bot '@FotoTapok_bot'
