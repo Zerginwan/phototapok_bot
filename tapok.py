@@ -94,7 +94,9 @@ def start_bot():
 Для регистрации на событие отправь /sign_in
 Для выхода из события отправь /quit
 Если ты не хочешь получать уведомления о новых ФотоКвестах - отправь /silence  
-Для получения даты следующего события - отправь /when  '''
+Для получения даты следующего события - отправь /when  
+Вызов справки, узнать о сути мероприятия, показать все команды - /help  
+'''
             cursor.execute("DELETE FROM users WHERE event_id = 0 AND user_id = ?",[message.from_user.id])
             cursor.execute("INSERT INTO users (username, user_id, event_id, enable) VALUES (?, ?, 0, 1)",[message.from_user.username, message.from_user.id])
             conn.commit()
