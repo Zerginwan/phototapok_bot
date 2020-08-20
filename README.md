@@ -77,4 +77,4 @@ systemctl status tapok.service
 /remove_user | Делает пользователя @username неактивным в текущем ивенте | username | Админ, Суперадмин
 /add_admin | Добавляет в список админов текущего ивента пользователя @username| username | Суперадмин
 /remove_admin |Убирает из списка админов текущего ивента пользователя @username| username | Суперадмин
-
+/when |Показывает время следующего события| - | Все
