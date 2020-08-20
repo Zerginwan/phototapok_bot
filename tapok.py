@@ -93,7 +93,8 @@ def start_bot():
             start_text = '''Здравствуй.
 Для регистрации на событие отправь /sign_in
 Для выхода из события отправь /quit
-Если ты не хочешь получать уведомления о новых ФотоКвестах - отправь /silence  '''
+Если ты не хочешь получать уведомления о новых ФотоКвестах - отправь /silence  
+Для получения даты следующего события - отправь /when  '''
             cursor.execute("DELETE FROM users WHERE event_id = 0 AND user_id = ?",[message.from_user.id])
             cursor.execute("INSERT INTO users (username, user_id, event_id, enable) VALUES (?, ?, 0, 1)",[message.from_user.username, message.from_user.id])
             conn.commit()
@@ -151,7 +152,7 @@ def start_bot():
 На старте первого этапа тебе в личные сообщения придут теги других участников твоей команды.
 Скоординируйтесь и выполните задание. Через час вы должны быть на новой точке сбора и уже загрузить 3-5 лучших фотографий от своей команды через бота (просто прикрепи фото и отправь сообщением).
 На старте второго этапа процесс повторится.
-Если ты не хочешь участвовать в мероприятии вообще или во втором заходе в частности - отправь команду /quit
+Если ты не хочешь участвовать в мероприятии вообще или во втором заходе в частности - отправь команду /quit  
 '''
             event = cursor.execute("SELECT * FROM events ORDER BY event_id DESC LIMIT 1;").fetchone()
             bot_sends_main_tasks = event[3]
@@ -312,7 +313,8 @@ def start_bot():
 /help НАЗВАНИЕ ЗАДАНИЯ - для вывода справки по этому заданию (небольшой текст, который возможно поможет тебе найти искомое)
 /additional - для дополнительного задания
 /silence - перестать получать уведомления о новых ФотоКвестах
-/notify - начать их получать
+/notify - начать их получать  
+/when - узнать время следующего события   
 Текущие организаторы ФотоКвеста - ''' + admins + '''
 
 По всем вопросам о боте - @Zerginwan  '''
@@ -564,7 +566,21 @@ def start_bot():
             except:
                 pass
             bot.send_message(admin_id, str(sys.exc_info()[0]).replace("_",r"\_"))
-
+    @bot.message_handler(commands=['when'])
+    def when_message(message):
+        try:
+            conn = create_connection()
+            cursor = conn.cursor()
+            text = str(cursor.execute("SELECT start_time FROM events WHERE private = 0 ORDER BY event_id DESC LIMIT 1;").fetchone()[0])
+            send_message(message.from_user.id,text.replace("_",r"\_"))
+            conn.commit()
+            conn.close()
+        except:
+            try:
+                conn.close()
+            except:
+                pass
+            bot.send_message(admin_id, str(sys.exc_info()[0]).replace("_",r"\_"))
     @bot.message_handler(commands=['new_event'])
     def new_event_message(message):
         try:
@@ -587,7 +603,6 @@ def start_bot():
             except:
                 pass
             bot.send_message(admin_id, str(sys.exc_info()[0]).replace("_",r"\_"))
-            raise
 
 
     @bot.message_handler(commands=['add_task'])
