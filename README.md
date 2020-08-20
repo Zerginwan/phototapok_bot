@@ -7,8 +7,10 @@
 git clone https://github.com/Zerginwan/phototapok_bot.git
 cd ./phototapok_bot
 pip3 install -r requirements.txt
-apt install -y rclone && rclone config  
+apt install -y rclone && rclone config
+cp ./settings.ini.example ./settings.ini
 ```  
+Заполните settings.ini!
 Запуск:  
 ```  
 python3 tapok.py
