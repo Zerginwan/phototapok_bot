@@ -573,7 +573,7 @@ def start_bot():
         try:
             conn = create_connection()
             cursor = conn.cursor()
-            event = str(cursor.execute("SELECT admins, title, start_time  FROM events WHERE private = 0 ORDER BY event_id DESC LIMIT 1;").fetchone())
+            event = cursor.execute("SELECT admins, title, start_time  FROM events WHERE private = 0 ORDER BY event_id DESC LIMIT 1;").fetchone()
             admins = []
             for admin in event[0].split(','):
                 admins.append("@" + admin)
