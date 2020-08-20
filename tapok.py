@@ -573,7 +573,11 @@ def start_bot():
         try:
             conn = create_connection()
             cursor = conn.cursor()
-            text = str(cursor.execute("SELECT start_time FROM events WHERE private = 0 ORDER BY event_id DESC LIMIT 1;").fetchone()[0])
+            event = str(cursor.execute("SELECT title, start_time, admins FROM events WHERE private = 0 ORDER BY event_id DESC LIMIT 1;").fetchone())
+            admins = []
+            for admin in event[2].split(','):
+                admins.append("@" + admin)
+            text = event[0] + "\n" + event[1] + "\nАдминистраторы забега: " + ', '.join(admins)
             bot.send_message(message.from_user.id,text.replace("_",r"\_"))
             conn.commit()
             conn.close()
@@ -771,7 +775,7 @@ def start_bot():
                 cursor = conn.cursor()
                 event = cursor.execute("SELECT * FROM events ORDER BY event_id DESC LIMIT 1;").fetchone()
                 admin_usernames = event[1].split(",")
-                username = message.text.replace("/add_admin ", "").replace("/add_admin", "").replace(r"@","")
+                username = message.text.replace("/add_admin ", "").replace("/add_admin", "").replace(r"@","").replace(r"\_","_")
                 if username != "":
                     cursor.execute("UPDATE events SET admins = admins || ',' || ? WHERE event_id = ?;",[username,event[0]])
                     event = cursor.execute("SELECT * FROM events ORDER BY event_id DESC LIMIT 1;").fetchone()
