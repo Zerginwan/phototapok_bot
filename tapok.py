@@ -812,11 +812,11 @@ def start_bot():
 
 if __name__ == '__main__':
     # redirect standard file descriptors
-    #sys.stdout.flush()
-    #sys.stderr.flush()
-    #so = open(stdout, 'a+')
-    #se = open(stderr, 'a+')
-    #os.dup2(so.fileno(), sys.stdout.fileno())
-    #os.dup2(se.fileno(), sys.stderr.fileno())
+    sys.stdout.flush()
+    sys.stderr.flush()
+    so = open(stdout, 'a+')
+    se = open(stderr, 'a+')
+    os.dup2(so.fileno(), sys.stdout.fileno())
+    os.dup2(se.fileno(), sys.stderr.fileno())
     
     start_bot()
