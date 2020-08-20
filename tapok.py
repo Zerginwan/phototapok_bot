@@ -573,11 +573,11 @@ def start_bot():
         try:
             conn = create_connection()
             cursor = conn.cursor()
-            event = str(cursor.execute("SELECT title, start_time, admins FROM events WHERE private = 0 ORDER BY event_id DESC LIMIT 1;").fetchone())
+            event = str(cursor.execute("SELECT admins, title, start_time  FROM events WHERE private = 0 ORDER BY event_id DESC LIMIT 1;").fetchone())
             admins = []
-            for admin in event[2].split(','):
+            for admin in event[0].split(','):
                 admins.append("@" + admin)
-            text = event[0] + "\n" + event[1] + "\nАдминистраторы забега: " + ', '.join(admins)
+            text = event[1] + "\n" + event[2] + "\nАдминистраторы забега: " + ', '.join(admins)
             bot.send_message(message.from_user.id,text.replace("_",r"\_"))
             conn.commit()
             conn.close()
