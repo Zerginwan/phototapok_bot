@@ -14,6 +14,12 @@ bot = telebot.TeleBot(token, parse_mode=str(config["Telegram"]["parse_mode"]))
 
 # Find directory, where tapok.py is
 dirname = os.path.dirname(os.path.abspath(__file__))
+if config["General"]["db_path"]:
+    db_path = config["General"]["db_path"]
+else:
+    db_path = dirname+"/tapok_sqlite.db"
+
+print("Sqlite path: " + str(db_path))
 
 def create_connection(db_file):
     """ create a database connection to a SQLite database """
@@ -67,14 +73,11 @@ create table if not exists teams(
             return conn
 
 def main():
-#    
-# Tasks in main 'tasks' dict must had to be written in low-case!!!!
-#
 
     @bot.message_handler(commands=['start'])
     def start_message(message):
         try:
-            conn = create_connection(dirname+"/tapok_sqlite.db")
+            conn = create_connection(db_path)
             cursor = conn.cursor()
             start_text = '''Здравствуй.  
 Для регистрации на событие отправь /sign_in  
@@ -95,7 +98,7 @@ def main():
     @bot.message_handler(commands=['silence'])
     def silence_message(message):
         try:
-            conn = create_connection(dirname+"/tapok_sqlite.db")
+            conn = create_connection(db_path)
             cursor = conn.cursor()
             text = '''Вы больше не будете получать уведомления о новых событиях.  
 Если вы решите изменить свое решение - отправьте /notify  '''
@@ -113,7 +116,7 @@ def main():
     @bot.message_handler(commands=['notify'])
     def notify_message(message):
         try:
-            conn = create_connection(dirname+"/tapok_sqlite.db")
+            conn = create_connection(db_path)
             cursor = conn.cursor()
             text = '''Вы снова получаете уведомления на наши события!  
 Если вы решите изменить свое решение - отправьте /silence  '''
@@ -131,7 +134,7 @@ def main():
     @bot.message_handler(commands=['sign_in'])
     def sign_in_message(message):
         try:
-            conn = create_connection(dirname+"/tapok_sqlite.db")
+            conn = create_connection(db_path)
             cursor = conn.cursor()
             start_text = '''Привет, тебя записали на **ФотоКвест**.  
 На старте первого этапа тебе в личные сообщения придут теги других участников твоей команды.  
@@ -171,16 +174,12 @@ def main():
         try:
             bot.reply_to(message,str(message.user_from_id))
         except:
-            try:
-                conn.close()
-            except:
-                pass
             bot.send_message(admin_id, str(sys.exc_info()[0]).replace("_",r"\_"))
 
     @bot.message_handler(commands=['clean_base'])
     def clean_base_message(message):
         try:
-            conn = create_connection(dirname+"/tapok_sqlite.db")
+            conn = create_connection(db_path)
             cursor = conn.cursor()
             event = cursor.execute("SELECT * FROM events ORDER BY event_id DESC LIMIT 1;").fetchone()
             admin_usernames = event[1].split(",")
@@ -201,7 +200,7 @@ def main():
     @bot.message_handler(commands=['show_bases'])
     def show_bases_message(message):
         try:
-            conn = create_connection(dirname+"/tapok_sqlite.db")
+            conn = create_connection(db_path)
             cursor = conn.cursor()
             if message.from_user.id == admin_id:
                 tables = cursor.execute("SELECT name FROM sqlite_master WHERE type='table' ORDER BY name;").fetchall()
@@ -229,7 +228,7 @@ def main():
             else:
                 if message.from_user.id == admin_id:
                     base = message.text.split()[1]
-                    conn = create_connection(dirname+"/tapok_sqlite.db")
+                    conn = create_connection(db_path)
                     cursor = conn.cursor()
                     tables = cursor.execute("SELECT name FROM sqlite_master WHERE type='table' ORDER BY name;").fetchall()
                     if any(k[0] == base for k in tables):
@@ -259,7 +258,7 @@ def main():
     @bot.message_handler(commands=['show_users'])
     def show_users_message(message):
         try:
-            conn = create_connection(dirname+"/tapok_sqlite.db")
+            conn = create_connection(db_path)
             cursor = conn.cursor()
             event = cursor.execute("SELECT * FROM events ORDER BY event_id DESC LIMIT 1;").fetchone()
             admin_usernames = event[1].split(",")
@@ -287,7 +286,7 @@ def main():
     @bot.message_handler(commands=['help'])
     def help_message(message):
         try:
-            conn = create_connection(dirname+"/tapok_sqlite.db")
+            conn = create_connection(db_path)
             cursor = conn.cursor()
             event = cursor.execute("SELECT * FROM events ORDER BY event_id DESC LIMIT 1;").fetchone()
             if message.text == "/help" or message.text == "/help ":
@@ -336,7 +335,7 @@ def main():
     @bot.message_handler(commands=['additional'])
     def additional_message(message):
         try:
-            conn = create_connection(dirname+"/tapok_sqlite.db")
+            conn = create_connection(db_path)
             cursor = conn.cursor()
             tasks = []
             event = cursor.execute("SELECT * FROM events ORDER BY event_id DESC LIMIT 1;").fetchone()
@@ -366,7 +365,7 @@ def main():
     @bot.message_handler(commands=['quit'])
     def quit_message(message):
         try:
-            conn = create_connection(dirname+"/tapok_sqlite.db")
+            conn = create_connection(db_path)
             cursor = conn.cursor()
             event = cursor.execute("SELECT * FROM events ORDER BY event_id DESC LIMIT 1;").fetchone()
             cursor.execute("UPDATE users SET enable = 0 WHERE user_id = ? AND event_id = ?;", [message.from_user.id, event[0]])
@@ -384,7 +383,7 @@ def main():
     @bot.message_handler(content_types=['photo'])
     def save_photo(message):
         try:
-            conn = create_connection(dirname+"/tapok_sqlite.db")
+            conn = create_connection(db_path)
             cursor = conn.cursor()
             event_id = cursor.execute("SELECT event_id FROM events ORDER BY event_id DESC LIMIT 1;").fetchone()[0]
             team = cursor.execute("SELECT event_id FROM teams WHERE event_id = ? AND user_id = ?;",[event_id, message.from_user.id]).fetchall()
@@ -418,7 +417,7 @@ def main():
     @bot.message_handler(commands=['sort'])
     def sort_all(message):
         try:
-            conn = create_connection(dirname+"/tapok_sqlite.db")
+            conn = create_connection(db_path)
             cursor = conn.cursor()
             event = cursor.execute("SELECT * FROM events ORDER BY event_id DESC LIMIT 1;").fetchone()
             bot_sends_main_tasks = event[3]
@@ -490,7 +489,7 @@ def main():
     @bot.message_handler(commands=['send_photo'])
     def send_photo_to_google_drive(message):
         try:
-            conn = create_connection(dirname+"/tapok_sqlite.db")
+            conn = create_connection(db_path)
             cursor = conn.cursor()
             event_id = cursor.execute("SELECT event_id FROM events ORDER BY event_id DESC LIMIT 1;").fetchone()[0]
             #
@@ -513,7 +512,7 @@ def main():
     @bot.message_handler(commands=['send_to_all'])
     def send_to_all(message):
         try:
-            conn = create_connection(dirname+"/tapok_sqlite.db")
+            conn = create_connection(db_path)
             cursor = conn.cursor()
             event = cursor.execute("SELECT * FROM events ORDER BY event_id DESC LIMIT 1;").fetchone()
             admin_usernames = event[1].split(",")
@@ -536,7 +535,7 @@ def main():
     @bot.message_handler(commands=['send_to_all_all'])
     def send_to_all_all(message):
         try:
-            conn = create_connection(dirname+"/tapok_sqlite.db")
+            conn = create_connection(db_path)
             cursor = conn.cursor()
             if message.from_user.id == admin_id:
                 text = message.text.replace("/send_to_all_all ", "").replace("/send_to_all_all", "")
@@ -557,7 +556,7 @@ def main():
     @bot.message_handler(commands=['new_event'])
     def new_event_message(message):
         try:
-            conn = create_connection(dirname+"/tapok_sqlite.db")
+            conn = create_connection(db_path)
             cursor = conn.cursor()
             if message.from_user.id == admin_id:
                 text = message.text.replace("/new_event ", "").replace("/new_event", "").strip()
@@ -582,7 +581,7 @@ def main():
     @bot.message_handler(commands=['add_task'])
     def add_task(message):
         try:
-            conn = create_connection(dirname+"/tapok_sqlite.db")
+            conn = create_connection(db_path)
             cursor = conn.cursor()
             event = cursor.execute("SELECT * FROM events ORDER BY event_id DESC LIMIT 1;").fetchone()
             admin_usernames = event[1].split(",")
@@ -615,7 +614,7 @@ def main():
     @bot.message_handler(commands=['enable_task'])
     def enable_task(message):
         try:
-            conn = create_connection(dirname+"/tapok_sqlite.db")
+            conn = create_connection(db_path)
             cursor = conn.cursor()
             event = cursor.execute("SELECT * FROM events ORDER BY event_id DESC LIMIT 1;").fetchone()
             admin_usernames = event[1].split(",")
@@ -640,7 +639,7 @@ def main():
     @bot.message_handler(commands=['disable_task'])
     def disable_task(message):
         try:
-            conn = create_connection(dirname+"/tapok_sqlite.db")
+            conn = create_connection(db_path)
             cursor = conn.cursor()
             event = cursor.execute("SELECT * FROM events ORDER BY event_id DESC LIMIT 1;").fetchone()
             admin_usernames = event[1].split(",")
@@ -664,7 +663,7 @@ def main():
     @bot.message_handler(commands=['show_tasks'])
     def show_tasks(message):
         try:
-            conn = create_connection(dirname+"/tapok_sqlite.db")
+            conn = create_connection(db_path)
             cursor = conn.cursor()
             event = cursor.execute("SELECT * FROM events ORDER BY event_id DESC LIMIT 1;").fetchone()
             admin_usernames = event[1].split(",")
@@ -688,7 +687,7 @@ def main():
     @bot.message_handler(commands=['remove_user'])
     def remove_user(message):
         try:
-            conn = create_connection(dirname+"/tapok_sqlite.db")
+            conn = create_connection(db_path)
             cursor = conn.cursor()
             event = cursor.execute("SELECT * FROM events ORDER BY event_id DESC LIMIT 1;").fetchone()
             admin_usernames = event[1].split(",")
@@ -714,7 +713,7 @@ def main():
     @bot.message_handler(commands=['remove_task'])
     def remove_task(message):
         try:
-            conn = create_connection(dirname+"/tapok_sqlite.db")
+            conn = create_connection(db_path)
             cursor = conn.cursor()
 
             if message.from_user.id == admin_id:
@@ -739,7 +738,7 @@ def main():
     def add_admin(message):
         try:
             if message.from_user.id == admin_id:
-                conn = create_connection(dirname+"/tapok_sqlite.db")
+                conn = create_connection(db_path)
                 cursor = conn.cursor()
                 event = cursor.execute("SELECT * FROM events ORDER BY event_id DESC LIMIT 1;").fetchone()
                 admin_usernames = event[1].split(",")
@@ -764,7 +763,7 @@ def main():
     def remove_admin(message):
         try:
             if message.from_user.id == admin_id:
-                conn = create_connection(dirname+"/tapok_sqlite.db")
+                conn = create_connection(db_path)
                 cursor = conn.cursor()
                 event = cursor.execute("SELECT * FROM events ORDER BY event_id DESC LIMIT 1;").fetchone()
                 admin_usernames = event[1].split(",")

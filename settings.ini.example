@@ -1,3 +1,7 @@
+[General]
+# Path to sqlite db-file
+# default: /path/to/tapokbot/folder/tapok_sqlite.db
+# db_path=
 [Telegram]
 # Admin user id (message.from_user.id).
 # Main admin - can change event, add event-admins, recieve errors etc.
