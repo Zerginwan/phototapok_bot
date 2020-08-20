@@ -574,7 +574,7 @@ def start_bot():
             conn = create_connection()
             cursor = conn.cursor()
             text = str(cursor.execute("SELECT start_time FROM events WHERE private = 0 ORDER BY event_id DESC LIMIT 1;").fetchone()[0])
-            send_message(message.from_user.id,text.replace("_",r"\_"))
+            bot.send_message(message.from_user.id,text.replace("_",r"\_"))
             conn.commit()
             conn.close()
         except:
