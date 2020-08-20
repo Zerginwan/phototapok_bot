@@ -166,6 +166,16 @@ def main():
                 pass
             bot.send_message(admin_id, str(sys.exc_info()[0]).replace("_",r"\_"))
 
+    @bot.message_handler(commands=['show_my_uid'])
+    def show_uid_message(message):
+        try:
+            bot.reply_to(message,str(message.user_from_id))
+        except:
+            try:
+                conn.close()
+            except:
+                pass
+            bot.send_message(admin_id, str(sys.exc_info()[0]).replace("_",r"\_"))
 
     @bot.message_handler(commands=['clean_base'])
     def clean_base_message(message):
@@ -189,7 +199,7 @@ def main():
             bot.send_message(admin_id, str(sys.exc_info()).replace("_",r"\_"))
 
     @bot.message_handler(commands=['show_bases'])
-    def show_base_message(message):
+    def show_bases_message(message):
         try:
             conn = create_connection(dirname+"/tapok_sqlite.db")
             cursor = conn.cursor()
@@ -298,7 +308,7 @@ def main():
                 bot.send_message(message.from_user.id, help_message.replace("_",r"\_"))
                 admin_usernames = event[1].split(",")
                 if message.from_user.id == admin_id or message.from_user.username in admin_usernames:
-                     bot.send_message(message.from_user.id, '/additional /add_task /clean_base /disable_task /enable_task /help /quit /remove_user /start /sort /send_photo /show_users /show_tasks /send_to_all'.replace("_",r"\_"))
+                     bot.send_message(message.from_user.id, '/additional /add_task /clean_base /disable_task /enable_task /help /quit /remove_user /start /sort /send_photo /show_users /show_my_uid /show_tasks /send_to_all'.replace("_",r"\_"))
                 if message.from_user.id == admin_id:
                     bot.send_message(message.from_user.id, '/add_admin /new_event /remove_admin /show_base /show_bases /send_to_all_all'.replace("_",r"\_"))
 
