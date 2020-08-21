@@ -31,6 +31,10 @@ if config.has_option("General","stdout"):
 else:
     stdout = "/var/log/message"
 
+if config.has_option("Telegram","tglink"):
+    tglink = config["Telegram"]["tglink"]
+else:
+    tglink = ""
 
 def create_connection():
     """ create a database connection to a SQLite database """
@@ -95,7 +99,7 @@ def start_bot():
 Для выхода из события отправь /quit
 Если ты не хочешь получать уведомления о новых ФотоКвестах - отправь /silence  
 Для получения даты следующего события - отправь /when  
-Вызов справки, узнать о сути мероприятия, показать все команды - /help  
+Вызов справки, узнать о сути мероприятия, FAQ, показать все команды - /help  
 '''
             cursor.execute("DELETE FROM users WHERE event_id = 0 AND user_id = ?",[message.from_user.id])
             cursor.execute("INSERT INTO users (username, user_id, event_id, enable) VALUES (?, ?, 0, 1)",[message.from_user.username, message.from_user.id])
@@ -317,8 +321,9 @@ def start_bot():
 /silence - перестать получать уведомления о новых ФотоКвестах
 /notify - начать их получать  
 /when - узнать время следующего события   
-Текущие организаторы ФотоКвеста - ''' + admins + '''
-
+Текущие организаторы ФотоКвеста - ''' + admins + '''  
+''' + tglink + '''  
+  
 По всем вопросам о боте - @Zerginwan  '''
                 bot.send_message(message.from_user.id, help_message.replace("_",r"\_"))
                 admin_usernames = event[1].split(",")
